@@ -1,0 +1,4 @@
+set xlabel "voltage [V]"
+set ylabel "log10 probability"
+set grid
+unset pm3d

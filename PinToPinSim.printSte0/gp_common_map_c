@@ -1,0 +1,8 @@
+set view map
+unset surface
+unset style
+unset pm3d
+set contour base
+set xlabel "time [sec]"
+set ylabel "voltage [V]"
+set grid

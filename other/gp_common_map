@@ -1,0 +1,8 @@
+set view map
+unset surface
+set style data pm3d
+set style function pm3d
+set pm3d implicit at b
+set xlabel "time [sec]"
+set ylabel "voltage [V]"
+set grid
