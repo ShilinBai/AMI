@@ -214,6 +214,10 @@ class EyeDiagramPainter:
 
         margin = self._get_margin(x_middle,y_middle,gap_pair_x,gap_pair_y,tdivw1,tdivw2,vdivw)
 
+        # jitter
+        jitter = self._get_jitter(x_middle,y_middle,margin["eye_width"])
+        margin["jitter"] = jitter
+
 
         mask.append([
             x_middle - tdivw1*1e12/2,
@@ -296,6 +300,26 @@ class EyeDiagramPainter:
         }
 
         return margin
+
+
+    def _get_jitter(self,x_middle,y_middle,x_scale):
+        use_zone = list(filter(lambda item: item[1] >= y_middle*0.99 and item[1] < y_middle*1.01, list(filter(lambda item: item[0] < x_middle and item[0] >= x_middle - x_scale and item[2] >= COLOR_MIN, self.data))))
+        y_list = list(set([item[1] for item in use_zone]))
+        y_list.sort()
+        if y_middle in y_list:
+            # x_points = list(filter(lambda item: item[1] == y_middle, use_zone))
+            # x_list = [item[0] for item in x_points]
+            # return max(x_list) - min(x_list)
+            y_value = y_middle
+        else:
+            try:
+                y_index = bisect.bisect_left(y_list,y_middle)
+                y_value = y_list[y_index]
+            except Exception:
+                return 0
+        x_points = list(filter(lambda item: item[1] == y_value, use_zone))
+        x_list = [item[0] for item in x_points]
+        return max(x_list) - min(x_list)
 
 
     def _find_outline(self,pre_data):
@@ -689,53 +713,53 @@ class EyeDiagramPainter:
 
 
 
-# if __name__ == '__main__':
-#     def run(args):
-#         t1 = time.time()
-#         data_file = 'PinToPinSim.printSte0\\data_map_50'
-#         save_file = 'test_hspice\\hspice_eye.png'
-#         csv_file = 'test\\data.csv'
-#         # EyeDiagramPainter(data_file, save_file).paint_scatter()
-#         data_file = 'other\\data_map_50'
-#         # EyeDiagramPainter(data_file, save_file,data_rate="8533").paint_scatter()
-#         EyeDiagramPainter(csv_file, save_file, source="AMI",data_rate="6400").paint_scatter()
-#         t2 = time.time()
-#         print(f"Total time: {t2 - t1} s")
-
-
-#     run(sys.argv[1:])
-
 if __name__ == '__main__':
     def run(args):
-
-        try:
-            # printSte0_file, save_folder = args[0], args[1]
-            printSte0_file, save_folder = "PinToPinSim.printSte0", "hspice_output"
-            printSte0_file, save_folder = "other", "hspice_output"
-            os.makedirs(save_folder, exist_ok=True)
-            filtered_files = []
-            pattern = re.compile(r'^data_map_\d+$')
-            for root, dirs, files in os.walk(printSte0_file):
-                for file in files:
-                    if pattern.match(file):
-                        filtered_files.append(os.path.join(root, file))
-            if filtered_files:
-                for data_file in filtered_files:
-                    save_file_name = os.path.basename(data_file).replace("data_map_", "port") + "_eye.png"
-                    save_file = os.path.join(save_folder, save_file_name)
-                    try:
-                        # EyeDiagramPainter(data_file, save_file).paint_scatter()
-                        EyeDiagramPainter(data_file, save_file,data_rate="8533").paint_scatter()
-                        print(f"\t\t{save_file_name}")
-                    except Exception as e:
-                        print(f"\t[Warning] Eye diagram generation failed! {save_file_name}")
-                        print(f"\t[Warning] {save_file_name} Eye diagram generation failed!")
-                        print(f"\t          The input file is: {data_file}")
-                        print(f"\t          Error details: {str(e)}")
-            else:
-                print("The data_map_{num} file was not found in the PinToPinSim.printSte0 directory.")
-        except IndexError:
-            print("Args: 1.Data file path; 2.Save file path")
+        t1 = time.time()
+        data_file = 'PinToPinSim.printSte0\\data_map_50'
+        save_file = 'test_hspice\\hspice_eye.png'
+        csv_file = 'test\\data.csv'
+        # EyeDiagramPainter(data_file, save_file).paint_scatter()
+        data_file = 'other\\data_map_50'
+        # EyeDiagramPainter(data_file, save_file,data_rate="8533").paint_scatter()
+        EyeDiagramPainter(csv_file, save_file, source="AMI",data_rate="6400").paint_scatter()
+        t2 = time.time()
+        print(f"Total time: {t2 - t1} s")
 
 
     run(sys.argv[1:])
+
+# if __name__ == '__main__':
+#     def run(args):
+
+#         try:
+#             # printSte0_file, save_folder = args[0], args[1]
+#             printSte0_file, save_folder = "PinToPinSim.printSte0", "hspice_output"
+#             printSte0_file, save_folder = "other", "hspice_output"
+#             os.makedirs(save_folder, exist_ok=True)
+#             filtered_files = []
+#             pattern = re.compile(r'^data_map_\d+$')
+#             for root, dirs, files in os.walk(printSte0_file):
+#                 for file in files:
+#                     if pattern.match(file):
+#                         filtered_files.append(os.path.join(root, file))
+#             if filtered_files:
+#                 for data_file in filtered_files:
+#                     save_file_name = os.path.basename(data_file).replace("data_map_", "port") + "_eye.png"
+#                     save_file = os.path.join(save_folder, save_file_name)
+#                     try:
+#                         # EyeDiagramPainter(data_file, save_file).paint_scatter()
+#                         EyeDiagramPainter(data_file, save_file,data_rate="8533").paint_scatter()
+#                         print(f"\t\t{save_file_name}")
+#                     except Exception as e:
+#                         print(f"\t[Warning] Eye diagram generation failed! {save_file_name}")
+#                         print(f"\t[Warning] {save_file_name} Eye diagram generation failed!")
+#                         print(f"\t          The input file is: {data_file}")
+#                         print(f"\t          Error details: {str(e)}")
+#             else:
+#                 print("The data_map_{num} file was not found in the PinToPinSim.printSte0 directory.")
+#         except IndexError:
+#             print("Args: 1.Data file path; 2.Save file path")
+
+
+#     run(sys.argv[1:])
